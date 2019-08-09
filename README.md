@@ -7,5 +7,7 @@
 
 This project is my first attemp developing at a game jam "Kenney Jam 2019".
 
+[Game is available to play](https://belauzas.github.io/burning-landscape/index.html)
+
 #### Authors
 [Rimantas](https://github.com/belauzas)
