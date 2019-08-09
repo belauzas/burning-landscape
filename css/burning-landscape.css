@@ -1,0 +1,79 @@
+body {
+    overflow: hidden;
+}
+.burning-landscape {
+    display: inline-block;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    text-align: center;
+}
+
+.burning-landscape > header {
+    display: inline-block;
+    width: 100%;
+    height: 60px;
+    padding: 10px;
+    float: left;
+}
+    .burning-landscape > header > .logo {
+        display: inline-block;
+        font-size: 24px;
+    }
+.burning-landscape > #field {
+    display: inline-block;
+    width: 100%;
+    height: calc(100% - 60px);
+    position: relative;
+}
+    .burning-landscape > #field > .background {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+        .burning-landscape > #field > .background > .cell {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            float: left;
+            background-image: url(../assets/tile/medievalTile_57.png);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+    .burning-landscape > #field > .objects {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+        .burning-landscape > #field > .objects > .cell {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            float: left;
+            background-image: url(../assets/tile/medievalTile_57.png);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .burning-landscape > #field > .objects > .cell.trees-1 {
+            background-image: url(../assets/tile/medievalTile_45.png);
+        }
+        .burning-landscape > #field > .objects > .cell.trees-2 {
+            background-image: url(../assets/tile/medievalTile_46.png);
+        }
+        .burning-landscape > #field > .objects > .cell.trees-3 {
+            background-image: url(../assets/tile/medievalTile_47.png);
+        }
+        .burning-landscape > #field > .objects > .cell.trees-4 {
+            background-image: url(../assets/tile/medievalTile_48.png);
+        }
+        .burning-landscape > #field > .objects > .cell.rock {
+            background-image: url(../assets/environment/medievalEnvironment_09.png);
+        }
