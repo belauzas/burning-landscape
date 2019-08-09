@@ -7,6 +7,7 @@ class burningLandscape  {
         this.field;
         this.background;
         this.objects;
+        this.unit;
 
         // game settings
         this.cellSize = 32;
@@ -16,6 +17,14 @@ class burningLandscape  {
             cellsX: 0,
             cellsY: 0,
             cellCount: 0
+        }
+        this.player = {
+            unitCount: 24,
+            selected: 1,
+            position: {
+                x: 0,
+                y: 0
+            }
         }
         this.level = {
             selected: 0,
@@ -48,6 +57,7 @@ class burningLandscape  {
         this.field = this.target.querySelector('#field');
         this.background = this.field.querySelector('.background');
         this.objects = this.field.querySelector('.objects');
+        this.unit = this.target.querySelector('.player > .unit');
 
         // reset game settings
         this.screen.width = parseInt(getComputedStyle(this.field).width);
@@ -70,6 +80,7 @@ class burningLandscape  {
         }
 
         this.obstacles();
+        this.playerStartingPosition();
 
         // reset cells
         this.background.innerHTML = this.HTML.background.tile
@@ -77,7 +88,7 @@ class burningLandscape  {
         let html = '';
         this.map.map( row => 
             row.map( column => {
-                if ( column > 0 && column <= this.HTML.objects.trees ) {
+                if ( column >= 0 && column <= this.HTML.objects.trees ) {
                     html += `<div class="cell trees-${column}"></div>`;
                 }
                 if ( column === 'r' ) {
@@ -86,6 +97,10 @@ class burningLandscape  {
             })
         );
         this.objects.innerHTML = html;
+
+        // reset player character position
+        this.unit.style.top = this.cellSize * this.player.position.y + 'px';
+        this.unit.style.left = this.cellSize * this.player.position.x + 'px';
         
     }
 
@@ -105,6 +120,27 @@ class burningLandscape  {
             const y = (cellID - x) / w;
             this.map[y][x] = 'r';
         });
+    }
+
+    playerStartingPosition = () => {
+        const w = this.screen.cellsX;
+        this.player.position.x = Math.floor(w/2);
+        this.player.position.y = this.screen.cellsY - 1;
+
+        console.log(this.map);
+        
+        // clear cells around the player
+        for ( let x=-1; x<=1; x++ ) {
+            for ( let y=-1; y<=1; y++ ) {
+                if ( this.player.position.x + x > 0 &&
+                     this.player.position.x + x < w &&
+                     this.player.position.y + y > 0 &&
+                     this.player.position.y + y < this.screen.cellsY ) {
+                        console.log( this.player.position.x + x, this.player.position.y + y );
+                    this.map[ this.player.position.y + y ][ this.player.position.x + x ] = 0;
+                }
+            }
+        }
     }
 }
 
