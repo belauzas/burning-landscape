@@ -7,6 +7,7 @@ class burningLandscape  {
         this.field;
         this.background;
         this.objects;
+        this.unit;
 
         // game settings
         this.cellSize = 32;
@@ -140,7 +141,7 @@ class burningLandscape  {
             }
         }
     }
-
+    
     moveUnit = ( event ) => {
         let move = {x:0, y:0};
         switch (event.keyCode) {
