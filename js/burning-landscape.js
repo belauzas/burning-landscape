@@ -16,6 +16,7 @@ class burningLandscape  {
             cellsX: 0,
             cellsY: 0
         }
+        this.map = [];
 
         // HTML templates
         this.HTML = {
@@ -23,7 +24,8 @@ class burningLandscape  {
                 tile: '<div class="cell"></div>'
             },
             objects: {
-                tile: '<div class="cell"></div>'
+                tile: '<div class="cell"></div>',
+                trees: 4
             }
         }
 
@@ -45,9 +47,23 @@ class burningLandscape  {
         this.field.style.width = this.screen.cellsX * this.cellSize + 'px';
         this.field.style.height = this.screen.cellsY * this.cellSize + 'px';
 
+        this.map = [];
+        for ( let x=0; x<this.screen.cellsX; x++) {
+            this.map.push([]);
+            for ( let y=0; y<this.screen.cellsY; y++ ) {
+                const size = Math.floor( Math.random() * this.HTML.objects.trees ) + 1;
+                this.map[x].push(size);
+            }
+        }
+
         // reset cells
-        this.background.innerHTML = this.HTML.background.tile.repeat( this.screen.cellsX * this.screen.cellsY );
-        this.objects.innerHTML = this.HTML.objects.tile.repeat( this.screen.cellsX * this.screen.cellsY );
+        this.background.innerHTML = this.HTML.background.tile
+                                        .repeat( this.screen.cellsX * this.screen.cellsY );
+        let html = '';
+        this.map.map( row => 
+            row.map( column => 
+                html += `<div class="cell trees-${column}"></div>` ));
+        this.objects.innerHTML = html;
         
     }
 }

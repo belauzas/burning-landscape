@@ -57,8 +57,20 @@ body {
             width: 32px;
             height: 32px;
             float: left;
-            background-image: url(../assets/tile/medievalTile_45.png);
+            background-image: url(../assets/tile/medievalTile_57.png);
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
+        }
+        .burning-landscape > #field > .objects > .cell.trees-1 {
+            background-image: url(../assets/tile/medievalTile_45.png);
+        }
+        .burning-landscape > #field > .objects > .cell.trees-2 {
+            background-image: url(../assets/tile/medievalTile_46.png);
+        }
+        .burning-landscape > #field > .objects > .cell.trees-3 {
+            background-image: url(../assets/tile/medievalTile_47.png);
+        }
+        .burning-landscape > #field > .objects > .cell.trees-4 {
+            background-image: url(../assets/tile/medievalTile_48.png);
         }
