@@ -77,3 +77,23 @@ body {
         .burning-landscape > #field > .objects > .cell.rock {
             background-image: url(../assets/environment/medievalEnvironment_09.png);
         }
+    .burning-landscape > #field > .player {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+        .burning-landscape > #field > .player > .unit {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-image: url(../assets/unit/medievalUnit_01.png);
+            background-size: 200%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
