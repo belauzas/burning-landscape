@@ -74,3 +74,6 @@ body {
         .burning-landscape > #field > .objects > .cell.trees-4 {
             background-image: url(../assets/tile/medievalTile_48.png);
         }
+        .burning-landscape > #field > .objects > .cell.rock {
+            background-image: url(../assets/environment/medievalEnvironment_09.png);
+        }

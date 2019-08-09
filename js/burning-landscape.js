@@ -18,7 +18,7 @@ class burningLandscape  {
             cellCount: 0
         }
         this.level = {
-            selected: 1,
+            selected: 0,
             list: [
                 { title: 'Easy', value: 5},
                 { title: 'Medium', value: 15},
@@ -76,8 +76,15 @@ class burningLandscape  {
                                         .repeat( this.screen.cellCount );
         let html = '';
         this.map.map( row => 
-            row.map( column => 
-                html += `<div class="cell trees-${column}"></div>` ));
+            row.map( column => {
+                if ( column > 0 && column <= this.HTML.objects.trees ) {
+                    html += `<div class="cell trees-${column}"></div>`;
+                }
+                if ( column === 'r' ) {
+                    html += `<div class="cell rock"></div>`;
+                }
+            })
+        );
         this.objects.innerHTML = html;
         
     }
@@ -92,18 +99,12 @@ class burningLandscape  {
                 list.push(random);
             }
         }
-        console.log(list);
-        console.log(this.screen);
-        
 
         list.forEach( cellID => {
             const x = cellID % w;
             const y = (cellID - x) / w;
-            this.map[y][x] = 'o';
+            this.map[y][x] = 'r';
         });
-
-        console.log(this.map);
-        
     }
 }
 
