@@ -84,6 +84,7 @@ body {
         left: 0;
         right: 0;
         bottom: 0;
+        overflow: hidden;
     }
         .burning-landscape > #field > .player > .unit {
             display: inline-block;
@@ -96,4 +97,19 @@ body {
             background-size: 200%;
             background-repeat: no-repeat;
             background-position: center;
+            box-shadow: 0 0 0 96px #F004;
+            border-radius: 50%;
+        }
+        .burning-landscape > #field > .player > .target {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-image: url(../assets/environment/medievalEnvironment_21.png);
+            background-size: 200%;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: crosshair;
         }
