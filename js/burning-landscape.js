@@ -9,6 +9,10 @@ class burningLandscape  {
         this.objects;
         this.unit;
         this.fireTarget;
+        this.playerLives;
+
+        // game clock
+        this.gameClock = null;
 
         // game settings
         this.cellSize = 32;
@@ -22,6 +26,8 @@ class burningLandscape  {
             cellCount: 0
         }
         this.player = {
+            defaultLives: 10,
+            lives: 1000,
             unitCount: 24,
             selectedUnit: 1,
             position: {
@@ -33,6 +39,7 @@ class burningLandscape  {
                     x: 0,
                     y: 0
                 },
+                canFire: false,
                 selected: 0,
                 list: [
                     { type: 'fire', range: 3 }
@@ -49,6 +56,7 @@ class burningLandscape  {
             obstaclesCount: 0
         }
         this.map = [];
+        this.onFire = [];
 
         // HTML templates
         this.HTML = {
@@ -72,8 +80,10 @@ class burningLandscape  {
         this.objects = this.field.querySelector('.objects');
         this.unit = this.target.querySelector('.player > .unit');
         this.fireTarget = this.target.querySelector('.player > .target');
+        this.playerLives = this.target.querySelector('header > .lives');
 
         // reset game settings
+        this.player.lives = this.player.defaultLives;
         this.screen.width = parseInt(getComputedStyle(this.field).width);
         this.screen.height = parseInt(getComputedStyle(this.field).height);
         this.screen.cellsX = Math.floor( this.screen.width / this.cellSize );
@@ -87,29 +97,33 @@ class burningLandscape  {
         this.level.obstaclesCount = Math.floor(this.screen.cellCount * this.level.list[ this.level.selected ].value / 100);
 
         this.map = [];
+        this.onFire = [];
         for ( let y=0; y<this.screen.cellsY; y++) {
             this.map.push([]);
+            this.onFire.push([]);
             for ( let x=0; x<this.screen.cellsX; x++ ) {
                 const size = Math.floor( Math.random() * this.HTML.objects.trees ) + 1;
                 this.map[y].push(size);
+                this.onFire[y].push(0);
             }
         }
 
         this.obstacles();
         // reset player chracter
         this.playerChracterReset();
+        this.playerLives.textContent = this.player.lives;
 
         // reset cells
         this.background.innerHTML = this.HTML.background.tile
                                         .repeat( this.screen.cellCount );
         let html = '';
-        this.map.map( row => 
-            row.map( column => {
+        this.map.map( (row, rx) => 
+            row.map( (column, cy) => {
                 if ( column >= 0 && column <= this.HTML.objects.trees ) {
-                    html += `<div class="cell trees-${column}"></div>`;
+                    html += `<div class="cell trees-${column}" data-id="${cy + rx * this.screen.cellsX}"></div>`;
                 }
                 if ( column === 'r' ) {
-                    html += `<div class="cell rock"></div>`;
+                    html += `<div class="cell rock" data-id="${cy + rx * this.screen.cellsX}"></div>`;
                 }
             })
         );
@@ -117,7 +131,18 @@ class burningLandscape  {
 
         // DOM events
         window.addEventListener('keyup', this.moveUnit);
-        window.addEventListener('mousemove', this.targetObstacle)
+        window.addEventListener('mousemove', this.targetObstacle);
+        this.fireTarget.addEventListener('click', this.gunFire)
+
+        // start game clock
+        this.gameClock = setInterval(() => {
+            if ( this.player.lives > 0 ) {
+                this.updateGame();
+            } else {
+                clearInterval(this.gameClock);
+                console.log('GAME OVER...');
+            }
+        }, 1000);
     }
 
     obstacles = () => {
@@ -215,7 +240,28 @@ class burningLandscape  {
             }
         } else {
             this.fireTarget.style.display = 'none';
+            this.player.gun.canFire = true;
         }
+    }
+
+    gunFire = () => {
+        console.log(this.player.gun.canFire);
+        
+        const x = this.player.gun.target.x;
+        const y = this.player.gun.target.y;
+        if ( this.player.gun.canFire === true &&
+             this.onFire[y][x] === 0 ) {
+            this.onFire[y][x] = 1;
+            this.player.gun.canFire = false;
+            this.field.querySelector(`.cell[data-id="${x + y * this.screen.cellsX}"]`)
+                .classList.add('fire');
+        }
+    }
+
+    updateGame = () => {
+        this.player.lives--;
+        this.player.gun.canFire = true;
+        console.log('updating...');
     }
 }
 
