@@ -192,9 +192,14 @@ class burningLandscape  {
     targetObstacle = ( event ) => {
         const targetX = Math.floor((event.clientX - this.screen.fieldLeft) / this.cellSize);
         const targetY = Math.floor((event.clientY - this.screen.fieldTop) / this.cellSize);
+        // make sure its in the field territory
+        if ( targetX < 0 || targetX >= this.screen.cellsX ||
+             targetY < 0 || targetY >= this.screen.cellsY ) {
+            return;
+        }
+
         const playerX = this.player.position.x;
         const playerY = this.player.position.y;
-
         const fireDistance = this.player.gun.list[ this.player.gun.selected ].range;
         const targetDistance = Math.floor( Math.sqrt( (playerX - targetX) * (playerX - targetX) + (playerY - targetY) * (playerY - targetY) ) );
 
