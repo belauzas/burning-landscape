@@ -13,6 +13,7 @@ class burningLandscape  {
 
         // game clock
         this.gameClock = null;
+        this.gameClockSpeed = 1000;
 
         // game settings
         this.cellSize = 32;
@@ -26,7 +27,7 @@ class burningLandscape  {
             cellCount: 0
         }
         this.player = {
-            defaultLives: 10,
+            defaultLives: 1000,
             lives: 1000,
             unitCount: 24,
             selectedUnit: 1,
@@ -142,7 +143,7 @@ class burningLandscape  {
                 clearInterval(this.gameClock);
                 console.log('GAME OVER...');
             }
-        }, 1000);
+        }, this.gameClockSpeed);
     }
 
     obstacles = () => {
@@ -245,8 +246,6 @@ class burningLandscape  {
     }
 
     gunFire = () => {
-        console.log(this.player.gun.canFire);
-        
         const x = this.player.gun.target.x;
         const y = this.player.gun.target.y;
         if ( this.player.gun.canFire === true &&
@@ -261,7 +260,30 @@ class burningLandscape  {
     updateGame = () => {
         this.player.lives--;
         this.player.gun.canFire = true;
-        console.log('updating...');
+        this.levelDownTrees();
+        this.removeEmptyFire();
+    }
+
+    levelDownTrees  = () => {
+        this.onFire.forEach( (row, r) => {
+            row.forEach( (column, c) => {
+                if ( this.onFire[r][c] === 1 ) {
+                    this.map[r][c]--;
+                }
+            });
+        });
+    }
+
+    removeEmptyFire = () => {
+        this.onFire.forEach( (row, r) => {
+            row.forEach( (column, c) => {
+                if ( this.map[r][c] === 0 ) {
+                    const cell = this.field.querySelector(`.cell[data-id="${c + r * this.screen.cellsX}"]`);
+                    cell.classList.remove('trees-1', 'trees-2', 'trees-3', 'trees-4', 'fire');
+                    this.onFire[r][c] = 0;
+                }
+            });
+        });
     }
 }
 
