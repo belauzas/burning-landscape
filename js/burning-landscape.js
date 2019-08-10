@@ -259,18 +259,55 @@ class burningLandscape  {
 
     updateGame = () => {
         this.player.lives--;
+        this.playerLives.textContent = this.player.lives;
         this.player.gun.canFire = true;
         this.levelDownTrees();
         this.removeEmptyFire();
     }
 
     levelDownTrees  = () => {
+        let newFire = [];
         this.onFire.forEach( (row, r) => {
             row.forEach( (column, c) => {
                 if ( this.onFire[r][c] === 1 ) {
                     this.map[r][c]--;
+                    // fire around
+                    for ( let x=-1; x<=1; x++ ) {
+                        for ( let y=-1; y<=1; y++ ) {
+                            if ( r+y >= 0 &&
+                                 r+y < this.screen.cellsY &&
+                                 c+x >= 0 &&
+                                 c+x < this.screen.cellsX &&
+                                 this.map[r+y][c+x] > 0 && 
+                                 this.map[r+y][c+x] <= this.HTML.objects.trees &&
+                                 this.onFire[r+y][c+x] === 0  ) {
+                                newFire.push([r+y, c+x]);
+                            }
+                        }
+                    }
                 }
             });
+        });
+        
+        newFire.forEach( coords => {
+            let rocks = 0;
+            for ( let x=-1; x<=1; x++ ) {
+                for ( let y=-1; y<=1; y++ ) {
+                    if ( coords[1]+x >= 0 &&
+                         coords[1]+x < this.screen.cellsX &&
+                         coords[0]+y >= 0 &&
+                         coords[0]+y < this.screen.cellsY &&
+                         this.map[coords[0]+y][coords[1]+x] === 'r' ) {
+                        rocks++;
+                    }
+                }
+            }
+            
+            if ( rocks === 0 ) {
+                this.onFire[coords[0]][coords[1]] = 1;
+                this.field.querySelector(`.cell[data-id="${coords[1] + (coords[0]) * this.screen.cellsX}"]`)
+                    .classList.add('fire');
+            }
         });
     }
 
