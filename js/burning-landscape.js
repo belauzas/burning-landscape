@@ -8,12 +8,15 @@ class burningLandscape  {
         this.background;
         this.objects;
         this.unit;
+        this.fireTarget;
 
         // game settings
         this.cellSize = 32;
         this.screen = {
             width: 0,
             height: 0,
+            fieldTop: 0,
+            fieldLeft: 0,
             cellsX: 0,
             cellsY: 0,
             cellCount: 0
@@ -24,6 +27,16 @@ class burningLandscape  {
             position: {
                 x: 0,
                 y: 0
+            },
+            gun: {
+                target: {
+                    x: 0,
+                    y: 0
+                },
+                selected: 0,
+                list: [
+                    { type: 'fire', range: 3 }
+                ]
             }
         }
         this.level = {
@@ -58,6 +71,7 @@ class burningLandscape  {
         this.background = this.field.querySelector('.background');
         this.objects = this.field.querySelector('.objects');
         this.unit = this.target.querySelector('.player > .unit');
+        this.fireTarget = this.target.querySelector('.player > .target');
 
         // reset game settings
         this.screen.width = parseInt(getComputedStyle(this.field).width);
@@ -67,6 +81,8 @@ class burningLandscape  {
         this.screen.cellCount = this.screen.cellsX * this.screen.cellsY;
         this.field.style.width = this.screen.cellsX * this.cellSize + 'px';
         this.field.style.height = this.screen.cellsY * this.cellSize + 'px';
+        this.screen.fieldTop = this.field.offsetTop;
+        this.screen.fieldLeft = Math.floor( (this.screen.width - this.screen.cellsX * this.cellSize) / 2 );
 
         this.level.obstaclesCount = Math.floor(this.screen.cellCount * this.level.list[ this.level.selected ].value / 100);
 
@@ -101,6 +117,7 @@ class burningLandscape  {
 
         // DOM events
         window.addEventListener('keyup', this.moveUnit);
+        window.addEventListener('mousemove', this.targetObstacle)
     }
 
     obstacles = () => {
@@ -169,6 +186,30 @@ class burningLandscape  {
 
             this.unit.style.top = this.player.position.y * this.cellSize + 'px';
             this.unit.style.left = this.player.position.x * this.cellSize + 'px';
+        }
+    }
+
+    targetObstacle = ( event ) => {
+        const targetX = Math.floor((event.clientX - this.screen.fieldLeft) / this.cellSize);
+        const targetY = Math.floor((event.clientY - this.screen.fieldTop) / this.cellSize);
+        const playerX = this.player.position.x;
+        const playerY = this.player.position.y;
+
+        const fireDistance = this.player.gun.list[ this.player.gun.selected ].range;
+        const targetDistance = Math.floor( Math.sqrt( (playerX - targetX) * (playerX - targetX) + (playerY - targetY) * (playerY - targetY) ) );
+
+        if ( fireDistance >= targetDistance &&
+             this.map[targetY][targetX] !== 0 ) {
+            this.fireTarget.style.display = 'block';
+            if ( this.player.gun.target.x !== targetX ||
+                 this.player.gun.target.y !== targetY ) {
+                this.player.gun.target.x = targetX;
+                this.player.gun.target.y = targetY;
+                this.fireTarget.style.top = targetY * this.cellSize + 'px';
+                this.fireTarget.style.left = targetX * this.cellSize + 'px';
+            }
+        } else {
+            this.fireTarget.style.display = 'none';
         }
     }
 }
