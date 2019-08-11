@@ -15,9 +15,22 @@ body {
     height: 60px;
     padding: 10px;
     float: left;
+    line-height: 40px;
 }
     .burning-landscape > header > .logo {
         display: inline-block;
+        float: left;
+        font-size: 24px;
+    }
+    .burning-landscape > header > .play {
+        display: inline-block;
+        float: left;
+        font-size: 20px;
+        margin-left: 40px;
+    }
+    .burning-landscape > header > .lives {
+        display: inline-block;
+        float: right;
         font-size: 24px;
     }
 .burning-landscape > #field {
@@ -61,6 +74,7 @@ body {
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
+            position: relative;
         }
         .burning-landscape > #field > .objects > .cell.trees-1 {
             background-image: url(../assets/tile/medievalTile_45.png);
@@ -76,6 +90,43 @@ body {
         }
         .burning-landscape > #field > .objects > .cell.rock {
             background-image: url(../assets/environment/medievalEnvironment_09.png);
+        }
+        .burning-landscape > #field > .objects > .cell.fire::after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1;
+            background-image: url(../assets/environment/medievalEnvironment_21.png);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 150%;
+            animation-name: fire;
+            animation-iteration-count: infinite;
+            animation-duration: 1s;
+        }
+        @keyframes fire {
+            0% {
+                transform: rotate(-5deg);
+            }
+            20% {
+                transform: rotate(-0deg);
+            }
+            40% {
+                transform: rotate(10deg);
+            }
+            60% {
+                transform: rotate(-5deg);
+            }
+            80% {
+                transform: rotate(10deg);
+            }
+            100% {
+                transform: rotate(-10deg);
+            }
         }
     .burning-landscape > #field > .player {
         display: inline-block;
@@ -101,7 +152,7 @@ body {
             border-radius: 50%;
         }
         .burning-landscape > #field > .player > .target {
-            display: inline-block;
+            display: none;
             width: 32px;
             height: 32px;
             position: absolute;
