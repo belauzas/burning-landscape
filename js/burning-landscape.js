@@ -41,7 +41,6 @@ class burningLandscape  {
                     x: 0,
                     y: 0
                 },
-                canFire: false,
                 selected: 0,
                 list: [
                     { type: 'fire', range: 3 }
@@ -49,11 +48,12 @@ class burningLandscape  {
             }
         }
         this.level = {
-            selected: 0,
+            selected: 3,
             list: [
-                { title: 'Easy', value: 5, growProbability: 1, newTreeProbability: 1},
-                { title: 'Medium', value: 15, growProbability: 2, newTreeProbability: 4},
-                { title: 'Hard', value: 30, growProbability: 5, newTreeProbability: 8}
+                { title: 'Easy', value: 1, growProbability: 1, newTreeProbability: 1},
+                { title: 'Medium', value: 2, growProbability: 2, newTreeProbability: 2},
+                { title: 'Hard', value: 3, growProbability: 3, newTreeProbability: 3},
+                { title: 'Pro', value: 4, growProbability: 4, newTreeProbability: 4}
             ],
             obstaclesCount: 0
         }
@@ -255,17 +255,14 @@ class burningLandscape  {
             }
         } else {
             this.fireTarget.style.display = 'none';
-            this.player.gun.canFire = true;
         }
     }
 
     gunFire = () => {
         const x = this.player.gun.target.x;
         const y = this.player.gun.target.y;
-        if ( this.player.gun.canFire === true &&
-             this.onFire[y][x] === 0 ) {
+        if ( this.onFire[y][x] === 0 ) {
             this.onFire[y][x] = 1;
-            this.player.gun.canFire = false;
             this.field.querySelector(`.cell[data-id="${x + y * this.screen.cellsX}"]`)
                 .classList.add('fire');
         }
@@ -274,7 +271,6 @@ class burningLandscape  {
     updateGame = () => {
         this.player.lives--;
         this.playerLives.textContent = this.player.lives;
-        this.player.gun.canFire = true;
         this.levelDownTrees();
         this.removeEmptyFire();
         this.growTrees();
