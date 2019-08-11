@@ -9,6 +9,12 @@ class burningLandscape  {
         this.objects;
         this.unit;
         this.fireTarget;
+        this.playerLives;
+        this.gameStatus;
+
+        // game clock
+        this.gameClock = null;
+        this.gameClockSpeed = 1000;
 
         // game settings
         this.cellSize = 32;
@@ -22,6 +28,8 @@ class burningLandscape  {
             cellCount: 0
         }
         this.player = {
+            defaultLives: 1000,
+            lives: 1000,
             unitCount: 24,
             selectedUnit: 1,
             position: {
@@ -33,6 +41,7 @@ class burningLandscape  {
                     x: 0,
                     y: 0
                 },
+                canFire: false,
                 selected: 0,
                 list: [
                     { type: 'fire', range: 3 }
@@ -42,13 +51,19 @@ class burningLandscape  {
         this.level = {
             selected: 0,
             list: [
-                { title: 'Easy', value: 5},
-                { title: 'Medium', value: 15},
-                { title: 'Hard', value: 30}
+                { title: 'Easy', value: 5, growProbability: 1, newTreeProbability: 1},
+                { title: 'Medium', value: 15, growProbability: 2, newTreeProbability: 4},
+                { title: 'Hard', value: 30, growProbability: 5, newTreeProbability: 8}
             ],
             obstaclesCount: 0
         }
         this.map = [];
+        this.onFire = [];
+
+        this.trees = {
+            growProbability: 2,
+            newTreeProbability: 5
+        }
 
         // HTML templates
         this.HTML = {
@@ -72,8 +87,11 @@ class burningLandscape  {
         this.objects = this.field.querySelector('.objects');
         this.unit = this.target.querySelector('.player > .unit');
         this.fireTarget = this.target.querySelector('.player > .target');
+        this.playerLives = this.target.querySelector('header > .lives');
+        this.gameStatus = this.target.querySelector('.play');
 
         // reset game settings
+        this.player.lives = this.player.defaultLives;
         this.screen.width = parseInt(getComputedStyle(this.field).width);
         this.screen.height = parseInt(getComputedStyle(this.field).height);
         this.screen.cellsX = Math.floor( this.screen.width / this.cellSize );
@@ -84,32 +102,39 @@ class burningLandscape  {
         this.screen.fieldTop = this.field.offsetTop;
         this.screen.fieldLeft = Math.floor( (this.screen.width - this.screen.cellsX * this.cellSize) / 2 );
 
-        this.level.obstaclesCount = Math.floor(this.screen.cellCount * this.level.list[ this.level.selected ].value / 100);
+        const level = this.level.selected;
+        this.level.obstaclesCount = Math.floor(this.screen.cellCount * this.level.list[level].value / 100);
+        this.trees.growProbability = this.level.list[level].growProbability;
+        this.trees.newTreeProbability = this.level.list[level].newTreeProbability;
 
         this.map = [];
+        this.onFire = [];
         for ( let y=0; y<this.screen.cellsY; y++) {
             this.map.push([]);
+            this.onFire.push([]);
             for ( let x=0; x<this.screen.cellsX; x++ ) {
                 const size = Math.floor( Math.random() * this.HTML.objects.trees ) + 1;
                 this.map[y].push(size);
+                this.onFire[y].push(0);
             }
         }
 
         this.obstacles();
         // reset player chracter
         this.playerChracterReset();
+        this.playerLives.textContent = this.player.lives;
 
         // reset cells
         this.background.innerHTML = this.HTML.background.tile
                                         .repeat( this.screen.cellCount );
         let html = '';
-        this.map.map( row => 
-            row.map( column => {
+        this.map.map( (row, rx) => 
+            row.map( (column, cy) => {
                 if ( column >= 0 && column <= this.HTML.objects.trees ) {
-                    html += `<div class="cell trees-${column}"></div>`;
+                    html += `<div class="cell trees-${column}" data-id="${cy + rx * this.screen.cellsX}"></div>`;
                 }
                 if ( column === 'r' ) {
-                    html += `<div class="cell rock"></div>`;
+                    html += `<div class="cell rock" data-id="${cy + rx * this.screen.cellsX}"></div>`;
                 }
             })
         );
@@ -117,7 +142,22 @@ class burningLandscape  {
 
         // DOM events
         window.addEventListener('keyup', this.moveUnit);
-        window.addEventListener('mousemove', this.targetObstacle)
+        window.addEventListener('mousemove', this.targetObstacle);
+        this.fireTarget.addEventListener('click', this.gunFire)
+
+        // start game clock
+        this.gameClock = setInterval(() => {
+            if ( this.player.lives > 0 ) {
+                this.updateGame();
+            } else {
+                clearInterval(this.gameClock);
+                this.gameStatus.textContent = 'GAME OVER :(';
+            }
+            if ( this.isWin() ) {
+                clearInterval(this.gameClock);
+                this.gameStatus.textContent = 'YOU WIN :)';
+            }
+        }, this.gameClockSpeed);
     }
 
     obstacles = () => {
@@ -215,7 +255,153 @@ class burningLandscape  {
             }
         } else {
             this.fireTarget.style.display = 'none';
+            this.player.gun.canFire = true;
         }
+    }
+
+    gunFire = () => {
+        const x = this.player.gun.target.x;
+        const y = this.player.gun.target.y;
+        if ( this.player.gun.canFire === true &&
+             this.onFire[y][x] === 0 ) {
+            this.onFire[y][x] = 1;
+            this.player.gun.canFire = false;
+            this.field.querySelector(`.cell[data-id="${x + y * this.screen.cellsX}"]`)
+                .classList.add('fire');
+        }
+    }
+
+    updateGame = () => {
+        this.player.lives--;
+        this.playerLives.textContent = this.player.lives;
+        this.player.gun.canFire = true;
+        this.levelDownTrees();
+        this.removeEmptyFire();
+        this.growTrees();
+        this.growNewTrees();
+    }
+
+    levelDownTrees  = () => {
+        let newFire = [];
+        this.onFire.forEach( (row, r) => {
+            row.forEach( (column, c) => {
+                if ( this.onFire[r][c] === 1 ) {
+                    this.map[r][c]--;
+                    // fire around
+                    for ( let x=-1; x<=1; x++ ) {
+                        for ( let y=-1; y<=1; y++ ) {
+                            if ( r+y >= 0 &&
+                                 r+y < this.screen.cellsY &&
+                                 c+x >= 0 &&
+                                 c+x < this.screen.cellsX &&
+                                 this.map[r+y][c+x] > 0 && 
+                                 this.map[r+y][c+x] <= this.HTML.objects.trees &&
+                                 this.onFire[r+y][c+x] === 0  ) {
+                                newFire.push([r+y, c+x]);
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        
+        newFire.forEach( coords => {
+            let rocks = 0;
+            for ( let x=-1; x<=1; x++ ) {
+                for ( let y=-1; y<=1; y++ ) {
+                    if ( coords[1]+x >= 0 &&
+                         coords[1]+x < this.screen.cellsX &&
+                         coords[0]+y >= 0 &&
+                         coords[0]+y < this.screen.cellsY &&
+                         this.map[coords[0]+y][coords[1]+x] === 'r' ) {
+                        rocks++;
+                    }
+                }
+            }
+            
+            if ( rocks === 0 ) {
+                this.onFire[coords[0]][coords[1]] = 1;
+                this.field.querySelector(`.cell[data-id="${coords[1] + (coords[0]) * this.screen.cellsX}"]`)
+                    .classList.add('fire');
+            }
+        });
+    }
+
+    removeEmptyFire = () => {
+        this.onFire.forEach( (row, r) => {
+            row.forEach( (column, c) => {
+                if ( this.map[r][c] === 0 ) {
+                    const cell = this.field.querySelector(`.cell[data-id="${c + r * this.screen.cellsX}"]`);
+                    cell.classList.remove('trees-1', 'trees-2', 'trees-3', 'trees-4', 'fire');
+                    this.onFire[r][c] = 0;
+                }
+            });
+        });
+    }
+
+    growTrees = () => {
+        const w = this.screen.cellsX;
+        this.map.forEach( (row, r) => {
+            row.forEach( (treeLevel, c) => {
+                if ( Number.isInteger(treeLevel) &&
+                     treeLevel > 0 &&
+                     treeLevel < 4 ) {
+                    const prob = Math.random() * 100;
+                    if ( prob <= this.trees.growProbability ) {
+                        const tree = this.objects.querySelector(`.cell[data-id="${r*w+c}"]`);
+                        tree.classList.remove(`trees-${treeLevel}`);
+                        this.map[r][c]++;
+                        tree.classList.add(`trees-${treeLevel+1}`);
+                    }
+                }
+            });
+        });
+    }
+
+    growNewTrees = () => {
+        const w = this.screen.cellsX;
+        this.map.forEach( (row, r) => {
+            row.forEach( (treeLevel, c) => {
+                if ( treeLevel === 0 ) {
+                    const prob = Math.random() * 100;
+                    if ( prob <= this.trees.newTreeProbability ) {
+                        if ( this.isTreeNeerCoords( c, r ) === true ) {
+                            this.objects.querySelector(`.cell[data-id="${(r)*w+c}"]`)
+                                .classList.add(`trees-${treeLevel+1}`);
+                            this.map[r][c]++;
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    isTreeNeerCoords = ( X, Y ) => {
+        for ( let x=-1; x<=1; x++ ) {
+            for ( let y=-1; y<=1; y++ ) {
+                if ( Y+y >= 0 &&
+                     Y+y < this.screen.cellsY &&
+                     X+x >= 0 &&
+                     X+x < this.screen.cellsX &&
+                     Number.isInteger(this.map[Y+y][X+x]) &&
+                     this.map[Y+y][X+x] > 0 ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    isWin = () => {
+        for ( let x=0; x<this.screen.cellsX; x++ ) {
+            for ( let y=0; y<this.screen.cellsY; y++ ) {
+                if ( this.map[y][x] !== 'r' &&
+                     this.map[y][x] > 0 ) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
 
