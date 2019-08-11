@@ -10,6 +10,7 @@ class burningLandscape  {
         this.unit;
         this.fireTarget;
         this.playerLives;
+        this.gameStatus;
 
         // game clock
         this.gameClock = null;
@@ -50,14 +51,19 @@ class burningLandscape  {
         this.level = {
             selected: 0,
             list: [
-                { title: 'Easy', value: 5},
-                { title: 'Medium', value: 15},
-                { title: 'Hard', value: 30}
+                { title: 'Easy', value: 5, growProbability: 1, newTreeProbability: 1},
+                { title: 'Medium', value: 15, growProbability: 2, newTreeProbability: 4},
+                { title: 'Hard', value: 30, growProbability: 5, newTreeProbability: 8}
             ],
             obstaclesCount: 0
         }
         this.map = [];
         this.onFire = [];
+
+        this.trees = {
+            growProbability: 2,
+            newTreeProbability: 5
+        }
 
         // HTML templates
         this.HTML = {
@@ -82,6 +88,7 @@ class burningLandscape  {
         this.unit = this.target.querySelector('.player > .unit');
         this.fireTarget = this.target.querySelector('.player > .target');
         this.playerLives = this.target.querySelector('header > .lives');
+        this.gameStatus = this.target.querySelector('.play');
 
         // reset game settings
         this.player.lives = this.player.defaultLives;
@@ -95,7 +102,10 @@ class burningLandscape  {
         this.screen.fieldTop = this.field.offsetTop;
         this.screen.fieldLeft = Math.floor( (this.screen.width - this.screen.cellsX * this.cellSize) / 2 );
 
-        this.level.obstaclesCount = Math.floor(this.screen.cellCount * this.level.list[ this.level.selected ].value / 100);
+        const level = this.level.selected;
+        this.level.obstaclesCount = Math.floor(this.screen.cellCount * this.level.list[level].value / 100);
+        this.trees.growProbability = this.level.list[level].growProbability;
+        this.trees.newTreeProbability = this.level.list[level].newTreeProbability;
 
         this.map = [];
         this.onFire = [];
@@ -141,7 +151,11 @@ class burningLandscape  {
                 this.updateGame();
             } else {
                 clearInterval(this.gameClock);
-                console.log('GAME OVER...');
+                this.gameStatus.textContent = 'GAME OVER :(';
+            }
+            if ( this.isWin() ) {
+                clearInterval(this.gameClock);
+                this.gameStatus.textContent = 'YOU WIN :)';
             }
         }, this.gameClockSpeed);
     }
@@ -263,6 +277,8 @@ class burningLandscape  {
         this.player.gun.canFire = true;
         this.levelDownTrees();
         this.removeEmptyFire();
+        this.growTrees();
+        this.growNewTrees();
     }
 
     levelDownTrees  = () => {
@@ -321,6 +337,71 @@ class burningLandscape  {
                 }
             });
         });
+    }
+
+    growTrees = () => {
+        const w = this.screen.cellsX;
+        this.map.forEach( (row, r) => {
+            row.forEach( (treeLevel, c) => {
+                if ( Number.isInteger(treeLevel) &&
+                     treeLevel > 0 &&
+                     treeLevel < 4 ) {
+                    const prob = Math.random() * 100;
+                    if ( prob <= this.trees.growProbability ) {
+                        const tree = this.objects.querySelector(`.cell[data-id="${r*w+c}"]`);
+                        tree.classList.remove(`trees-${treeLevel}`);
+                        this.map[r][c]++;
+                        tree.classList.add(`trees-${treeLevel+1}`);
+                    }
+                }
+            });
+        });
+    }
+
+    growNewTrees = () => {
+        const w = this.screen.cellsX;
+        this.map.forEach( (row, r) => {
+            row.forEach( (treeLevel, c) => {
+                if ( treeLevel === 0 ) {
+                    const prob = Math.random() * 100;
+                    if ( prob <= this.trees.newTreeProbability ) {
+                        if ( this.isTreeNeerCoords( c, r ) === true ) {
+                            this.objects.querySelector(`.cell[data-id="${(r)*w+c}"]`)
+                                .classList.add(`trees-${treeLevel+1}`);
+                            this.map[r][c]++;
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    isTreeNeerCoords = ( X, Y ) => {
+        for ( let x=-1; x<=1; x++ ) {
+            for ( let y=-1; y<=1; y++ ) {
+                if ( Y+y >= 0 &&
+                     Y+y < this.screen.cellsY &&
+                     X+x >= 0 &&
+                     X+x < this.screen.cellsX &&
+                     Number.isInteger(this.map[Y+y][X+x]) &&
+                     this.map[Y+y][X+x] > 0 ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    isWin = () => {
+        for ( let x=0; x<this.screen.cellsX; x++ ) {
+            for ( let y=0; y<this.screen.cellsY; y++ ) {
+                if ( this.map[y][x] !== 'r' &&
+                     this.map[y][x] > 0 ) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
 

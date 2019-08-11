@@ -15,11 +15,18 @@ body {
     height: 60px;
     padding: 10px;
     float: left;
+    line-height: 40px;
 }
     .burning-landscape > header > .logo {
         display: inline-block;
         float: left;
         font-size: 24px;
+    }
+    .burning-landscape > header > .play {
+        display: inline-block;
+        float: left;
+        font-size: 20px;
+        margin-left: 40px;
     }
     .burning-landscape > header > .lives {
         display: inline-block;
